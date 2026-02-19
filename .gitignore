@@ -15,6 +15,7 @@ terraform.tfstate.backup.old
 
 # Environment files
 *.env
+.env
 
 # Node
 node_modules/
