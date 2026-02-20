@@ -4,7 +4,7 @@ const os = require("os");
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-const appVersion = process.env.APP_VERSION || "1.0.0";
+const appVersion = process.env.APP_VERSION || "1.0.2";
 const environment = process.env.NODE_ENV || "development";
 const region = process.env.AWS_REGION || "local";
 

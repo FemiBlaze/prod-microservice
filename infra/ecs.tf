@@ -1,9 +1,16 @@
 resource "aws_ecs_cluster" "main" {
   name = "prod-microservice-cluster"
+
+  setting {
+    name  = "containerInsights"
+    value = "enabled"
+  }
 }
+
 resource "aws_ecr_repository" "app" {
   name = "prod-microservice"
 }
+
 resource "aws_iam_role" "ecs_task_execution_role" {
   name = "ecsTaskExecutionRole"
 
@@ -35,15 +42,26 @@ resource "aws_ecs_task_definition" "app" {
   container_definitions = jsonencode([
     {
       name      = "app"
-      image = "${aws_ecr_repository.app.repository_url}:${var.image_tag}"
+      image     = "${aws_ecr_repository.app.repository_url}:${var.image_tag}"
       essential = true
 
       portMappings = [{
         containerPort = 3000
         hostPort      = 3000
       }]
+
+      logConfiguration = {
+        logDriver = "awslogs"
+        options = {
+          awslogs-group         = aws_cloudwatch_log_group.ecs.name
+          awslogs-region        = "us-east-1"
+          awslogs-stream-prefix = "ecs"
+        }
+      }
     }
   ])
+
+  depends_on = [aws_cloudwatch_log_group.ecs]
 }
 
 resource "aws_ecs_service" "app" {
@@ -51,10 +69,19 @@ resource "aws_ecs_service" "app" {
   cluster         = aws_ecs_cluster.main.id
   task_definition = aws_ecs_task_definition.app.arn
   launch_type     = "FARGATE"
-  desired_count   = 1
+  desired_count   = var.desired_count
+
+  deployment_minimum_healthy_percent = 100
+  deployment_maximum_percent         = 200
+  health_check_grace_period_seconds  = 60
+
+  deployment_circuit_breaker {
+    enable   = true
+    rollback = true
+  }
 
   network_configuration {
-    subnets         = [
+    subnets = [
       aws_subnet.public_1.id,
       aws_subnet.public_2.id
     ]
@@ -70,4 +97,5 @@ resource "aws_ecs_service" "app" {
 
   depends_on = [aws_lb_listener.app]
 }
+
 
