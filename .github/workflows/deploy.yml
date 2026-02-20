@@ -37,9 +37,11 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build -t $ECR_REPOSITORY:${{ github.sha }} .
-          docker tag $ECR_REPOSITORY:${{ github.sha }} \
+          docker build -t $ECR_REPOSITORY:${{ github.sha }} ./microservice
+          docker tag \
+          $ECR_REPOSITORY:${{ github.sha }} \
           251894223238.dkr.ecr.us-east-1.amazonaws.com/$ECR_REPOSITORY:${{ github.sha }}
+
 
       - name: Push Docker image
         run: |
