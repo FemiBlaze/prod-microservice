@@ -12,8 +12,6 @@ The infrastructure and deployment workflows are fully automated.
 
 ## Project Structure
 
-## Project Structure
-
 ```
 prod-microservice/
 ├── .github/
