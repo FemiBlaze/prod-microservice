@@ -12,40 +12,44 @@ The infrastructure and deployment workflows are fully automated.
 
 ## Project Structure
 
+## Project Structure
+
+```
 prod-microservice/
 ├── .github/
 │   └── workflows/
-│       └── deploy.yml               # OIDC-based CI/CD pipeline
+│       └── deploy.yml
 │
-├── infra/                           # Terraform Infrastructure (AWS)
-│   ├── backend.tf                   # Remote state (S3 + DynamoDB)
-│   ├── provider.tf                  # AWS provider + default tags
-│   ├── variables.tf                 # Input variables
-│   ├── vpc.tf                       # VPC, subnets, route tables
-│   ├── security.tf                  # Security groups (ALB & ECS)
-│   ├── alb.tf                       # ALB, target group, listener
-│   ├── ecs.tf                       # ECS cluster, task definition, service
-│   ├── iam-github.tf                # GitHub OIDC IAM role
-│   ├── monitoring.tf                # CloudWatch logs, alarms, SNS
-│   ├── outputs.tf                   # Useful infrastructure outputs
-│   ├── bootstrap/                   # Backend bootstrap resources
-│   └── .terraform.lock.hcl          # Provider version lock
+├── infra/
+│   ├── backend.tf
+│   ├── provider.tf
+│   ├── variables.tf
+│   ├── vpc.tf
+│   ├── security.tf
+│   ├── alb.tf
+│   ├── ecs.tf
+│   ├── iam-github.tf
+│   ├── monitoring.tf
+│   ├── outputs.tf
+│   ├── bootstrap/
+│   └── .terraform.lock.hcl
 │
-├── microservice/                    # Application Layer
+├── microservice/
 │   ├── src/
 │   │   └── server.js
 │   ├── Dockerfile
+│  
 │
-├── screenshots/                     # Architecture & deployment visuals
-│
+├── screenshots/
 ├── .gitignore
 └── README.md
-
+```
 
 ## Architecture
 
 ### Infrastructure Flow
 
+```
 Users (Internet)
         │
         ▼
@@ -63,11 +67,12 @@ Docker Container (Node.js Microservice)
                           │
                           ▼
                        SNS (Email Alerts)
+```
 
---- 
 
 ### CI/CD Flow
 
+```
 Developer Push (GitHub)
         │
         ▼
@@ -78,6 +83,7 @@ Amazon ECR (Image Push - Commit SHA Tag)
         │
         ▼
 ECS Rolling Deployment (Circuit Breaker Enabled)
+```
 
 --- 
 
