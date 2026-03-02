@@ -15,31 +15,31 @@ The infrastructure and deployment workflows are fully automated.
 prod-microservice/
 ├── .github/
 │   └── workflows/
-│       └── deploy.yml                # OIDC-based CI/CD pipeline
+│       └── deploy.yml               # OIDC-based CI/CD pipeline
 │
-├── .gitignore
-├── README.md
+├── infra/                           # Terraform Infrastructure (AWS)
+│   ├── backend.tf                   # Remote state (S3 + DynamoDB)
+│   ├── provider.tf                  # AWS provider + default tags
+│   ├── variables.tf                 # Input variables
+│   ├── vpc.tf                       # VPC, subnets, route tables
+│   ├── security.tf                  # Security groups (ALB & ECS)
+│   ├── alb.tf                       # ALB, target group, listener
+│   ├── ecs.tf                       # ECS cluster, task definition, service
+│   ├── iam-github.tf                # GitHub OIDC IAM role
+│   ├── monitoring.tf                # CloudWatch logs, alarms, SNS
+│   ├── outputs.tf                   # Useful infrastructure outputs
+│   ├── bootstrap/                   # Backend bootstrap resources
+│   └── .terraform.lock.hcl          # Provider version lock
 │
-├── infra/                            # Terraform Infrastructure (AWS)
-│   ├── backend.tf                    # Remote state (S3 + DynamoDB)
-│   ├── provider.tf                   # AWS provider + default tags
-│   ├── variables.tf                  # Input variables
-│   ├── vpc.tf                        # VPC, subnets, route tables
-│   ├── security.tf                   # Security groups (ALB & ECS)
-│   ├── alb.tf                        # ALB, target group, listener
-│   ├── ecs.tf                        # ECS cluster, task definition, service
-│   ├── iam-github.tf                 # GitHub OIDC IAM role
-│   ├── monitoring.tf                 # CloudWatch logs, alarms, SNS
-│   ├── outputs.tf                    # Useful infrastructure outputs
-│   ├── bootstrap/                    # Backend bootstrap resources
-│   └── .terraform.lock.hcl           # Provider version lock
-│
-├── microservice/                     # Application Layer
+├── microservice/                    # Application Layer
 │   ├── src/
-│   │   └── server.js                 # Node.js microservice
+│   │   └── server.js
 │   ├── Dockerfile
 │
-└── screenshots/                      # Architecture & deployment visuals
+├── screenshots/                     # Architecture & deployment visuals
+│
+├── .gitignore
+└── README.md
 
 
 ## Architecture
@@ -47,42 +47,37 @@ prod-microservice/
 ### Infrastructure Flow
 
 Users (Internet)
-│
-▼
+        │
+        ▼
 Application Load Balancer (ALB)
-│
-▼
+        │
+        ▼
 ECS Fargate Service
-│
-▼
+        │
+        ▼
 Docker Container (Node.js Microservice)
-│
-├──────────► CloudWatch Logs
-│
-└──────────► CloudWatch Alarms
-│
-▼
-SNS (Email Alerts)
+        │
+        ├──────────► CloudWatch Logs
+        │
+        └──────────► CloudWatch Alarms
+                          │
+                          ▼
+                       SNS (Email Alerts)
 
 --- 
 
 ### CI/CD Flow
 
-Developer Push Code
-        ↓
-GitHub Actions CI/CD
-        ↓
-Docker Image → ECR
-        ↓
-ECS Rolling Deployment
-        ↓
-Fargate Containers Updated
-        ↓
-ALB Routes Traffic
-        ↓
-Users Access Service
-        ↓
-Logs + Alerts + Email Monitoring
+Developer Push (GitHub)
+        │
+        ▼
+GitHub Actions (OIDC Authentication)
+        │
+        ▼
+Amazon ECR (Image Push - Commit SHA Tag)
+        │
+        ▼
+ECS Rolling Deployment (Circuit Breaker Enabled)
 
 --- 
 
